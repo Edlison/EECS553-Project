@@ -1,0 +1,14 @@
+### Example user template template
+### Example user template
+data/CiteSeer
+data/cora
+data/PubMed
+data/Video_Games/raw
+data/Video_Games/processed
+hw4_p2/
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
