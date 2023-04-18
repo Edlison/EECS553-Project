@@ -56,12 +56,10 @@ def train(dataset_name='cora', model_name='GCN', iterations=100, lr=0.005, reg=5
 
         model.eval()
         pred = model(x, edge_index).argmax(dim=1)
-        cor_val = (pred[data.val_mask] == data.y[data.val_mask]).sum()
-        acc_val = cor_val / data.test_mask.sum()
         cor_test = (pred[data.test_mask] == data.y[data.test_mask]).sum()
         acc_test = cor_test / data.test_mask.sum()
         print(
-            'epoch: {}, loss: {:.4f}, eval acc: {:.4f}, test acc: {:.4f}'.format(epoch, loss.item(), acc_val, acc_test))
+            'epoch: {}, loss: {:.4f}, test acc: {:.4f}'.format(epoch, loss.item(), acc_test))
 
     model.eval()
     pred = model(x, edge_index).argmax(dim=1)
@@ -109,8 +107,8 @@ if __name__ == '__main__':
     dataset: {'cora', 'CiteSeer', 'PubMed'}
     model: {'GCN', 'GAT'}
     """
-    # train(dataset_name='cora', model_name='GAT', iterations=200)
+    train(dataset_name='amazon', model_name='GAT', iterations=100)
     # todo novel GAT method()
-    train_my(iterations=50)
+    # train_my(iterations=50)
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
