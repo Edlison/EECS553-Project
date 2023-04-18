@@ -6,7 +6,7 @@ data/PubMed
 data/Video_Games/raw
 data/Video_Games/processed
 hw4_p2/
-proj/__pycache__
+proj/__pycache__/*
 
 # IntelliJ project files
 .idea

@@ -123,8 +123,7 @@ class NetAmazon_GAT(torch.nn.Module):
     def __init__(self, num_node_features, num_classes, heads=8, dropout=0.0):
         super().__init__()
         self.gat1 = GATConv(num_node_features, 16, heads=heads, dropout=dropout)
-        self.gat2 = GATConv(256, 8, heads=8)
-        self.gat2 = GATConv(256, 8, heads=8)
+        self.gat2 = GATConv(128, 8, heads=8)
         self.gat3 = GATConv(64, num_classes)
 
     def forward(self, x, edge_index):

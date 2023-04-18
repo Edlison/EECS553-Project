@@ -89,11 +89,9 @@ def train_my(iterations=100, lr=0.005, reg=5e-4):
 
         model.eval()
         pred = model(x, edge_index).argmax(dim=1)
-        cor_val = (pred[data.val_mask] == data.y[data.val_mask]).sum()
-        acc_val = cor_val / data.test_mask.sum()
         cor_test = (pred[data.test_mask] == data.y[data.test_mask]).sum()
         acc_test = cor_test / data.test_mask.sum()
-        print('epoch: {}, loss: {:.4f}, eval acc: {:.4f}, test acc: {:.4f}'.format(epoch, loss.item(), acc_val, acc_test))
+        print('epoch: {}, loss: {:.4f}, test acc: {:.4f}'.format(epoch, loss.item(), acc_test))
 
     model.eval()
     pred = model(x, edge_index).argmax(dim=1)
@@ -137,18 +135,17 @@ def train_exp(dataset_name='cora', model_name='GCN', iterations=100, lr=0.005, r
 
         model.eval()
         pred = model(x, edge_index).argmax(dim=1)
-        cor_val = (pred[data.val_mask] == data.y[data.val_mask]).sum()
-        acc_val = cor_val / data.test_mask.sum()
         cor_test = (pred[data.test_mask] == data.y[data.test_mask]).sum()
         acc_test = cor_test / data.test_mask.sum()
         # print('epoch: {}, loss: {:.4f}, eval acc: {:.4f}, test acc: {:.4f}'.format(epoch, loss.item(), acc_val, acc_test))
-        output.append({'epoch': epoch, 'loss': loss.item(), 'eval acc': acc_val.item(), 'test acc': acc_test.item()})
+        output.append({'epoch': epoch, 'loss': loss.item(), 'test acc': acc_test.item()})
     model.eval()
     pred = model(x, edge_index).argmax(dim=1)
     cor = (pred[data.test_mask] == data.y[data.test_mask]).sum()
     acc = cor / data.test_mask.sum()
     # print('Final acc: {:.4f}'.format(acc.item()))
     return output
+
 
 if __name__ == '__main__':
     """
