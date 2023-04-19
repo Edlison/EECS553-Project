@@ -107,8 +107,8 @@ class Net_GAT(torch.nn.Module):
 class Net_GCN(torch.nn.Module):
     def __init__(self, num_node_features, num_classes):
         super().__init__()
-        self.gcn1 = GCNConv(num_node_features, 8)
-        self.gcn2 = GCNConv(8, num_classes)
+        self.gcn1 = GCNConv(num_node_features, 64)
+        self.gcn2 = GCNConv(64, num_classes)
 
     def forward(self, x, edge_index):
         h = self.gcn1(x, edge_index)
@@ -139,9 +139,10 @@ class NetAmazon_GAT(torch.nn.Module):
 class NetAmazon_GAT_heads(torch.nn.Module):
     def __init__(self, num_node_features, num_classes, heads, dropout=0.0):
         super().__init__()
-        self.gat1 = GATConv(num_node_features, 16, heads=heads, dropout=dropout)
-        self.gat2 = GATConv(16 * heads, 8, heads=heads)
-        self.gat3 = GATConv(8 * heads, num_classes)
+        # original hide parameter gat1: 16, gat2: 8
+        self.gat1 = GATConv(num_node_features, 128, heads=heads, dropout=dropout)
+        self.gat2 = GATConv(128 * heads, 64, heads=heads)
+        self.gat3 = GATConv(64 * heads, num_classes)
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)

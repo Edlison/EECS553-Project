@@ -184,11 +184,67 @@ def train_exp_amazon(model_name, heads, iterations=100, lr=0.005, reg=5e-4):
     return output
 
 
+# For getting the original classification and prediction
+def train_exp_return_data_pred(dataset_name='cora', model_name='GCN', iterations=100, lr=0.005, reg=5e-4):
+    dataset = {
+        'amazon': Amazon(),
+        'cora': Planetoid(root='../data', name='cora'),
+        'CiteSeer': Planetoid(root='../data', name='CiteSeer'),
+        'PubMed': Planetoid(root='../data', name='PubMed')
+    }
+    dataset = dataset[dataset_name]
+    if dataset_name == 'amazon':
+        data = dataset
+        net = {'GCN': NetAmazon_GCN(dataset.num_node_features, dataset.num_classes),
+               'GAT': NetAmazon_GAT(dataset.num_node_features, dataset.num_classes)}
+    else:
+        data = dataset[0]
+        net = {'GCN': Net_GCN(dataset.num_node_features, dataset.num_classes),
+               'GAT': Net_GAT(dataset.num_node_features, dataset.num_classes)}
+    model = net[model_name]
+    x, edge_index = data.x, data.edge_index
+    if cuda:
+        device = 1
+        x.cuda(device)
+        edge_index(device)
+        model.cuda(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
+    output = []
+    ori_data = []
+    pred_data = []
+    for epoch in range(iterations):
+        model.train()
+        optimizer.zero_grad()
+        out = model(x, edge_index)
+        loss = F.cross_entropy(out[data.train_mask], data.y[data.train_mask])
+        loss.backward()
+        optimizer.step()
+
+        model.eval()
+        pred = model(x, edge_index).argmax(dim=1)
+        cor_test = (pred[data.test_mask] == data.y[data.test_mask]).sum()
+        acc_test = cor_test / data.test_mask.sum()
+        output.append({'epoch': epoch, 'loss': loss.item(), 'test acc': acc_test.item()})
+        # get original data and predict data of the last iteration
+        if epoch == iterations - 1:
+            ori_data = (data.y[data.test_mask]).tolist()
+            pred_data = (pred[data.test_mask]).tolist()
+    model.eval()
+    pred = model(x, edge_index).argmax(dim=1)
+    cor = (pred[data.test_mask] == data.y[data.test_mask]).sum()
+    acc = cor / data.test_mask.sum()
+    output.append({'Original Classification': ori_data, 'Prediction': pred_data})
+    return output
+
+
 if __name__ == '__main__':
     """
     dataset: {'amazon', 'cora', 'CiteSeer', 'PubMed'}
     model: {'GCN', 'GAT'}
     change_model: {'GCN', 'GAT', 'GAT-heads', 'GAT-layers-2', 'GAT-layers-4'}
     """
-    a = train_exp_amazon('GAT-layers-2', 32, iterations=100)
+    # a = train_exp_return_data_pred('cora', 'GAT', iterations=100)
+    a = train_exp_amazon('GAT-heads', 6)
+    # b = train_exp_amazon('GAT-heads', 16)
     print(a)
+    # print(b)
