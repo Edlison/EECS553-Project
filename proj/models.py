@@ -136,6 +136,56 @@ class NetAmazon_GAT(torch.nn.Module):
         return F.log_softmax(h, dim=1)
 
 
+class NetAmazon_GAT_heads(torch.nn.Module):
+    def __init__(self, num_node_features, num_classes, heads, dropout=0.0):
+        super().__init__()
+        self.gat1 = GATConv(num_node_features, 16, heads=heads, dropout=dropout)
+        self.gat2 = GATConv(16 * heads, 8, heads=heads)
+        self.gat3 = GATConv(8 * heads, num_classes)
+
+    def forward(self, x, edge_index):
+        h = self.gat1(x, edge_index)
+        h = F.relu(h)
+        h = self.gat2(h, edge_index)
+        h = F.relu(h)
+        h = self.gat3(h, edge_index)
+        return F.log_softmax(h, dim=1)
+
+
+class NetAmazon_GAT_layers_2(torch.nn.Module):
+    def __init__(self, num_node_features, num_classes, heads, dropout=0.0):
+        super().__init__()
+        self.gat1 = GATConv(num_node_features, 16, heads=heads, dropout=dropout)
+        self.gat2 = GATConv(16 * heads, 8, heads=heads)
+        self.gat3 = GATConv(8 * heads, 8, heads=heads)
+        self.gat4 = GATConv(8 * heads, num_classes)
+
+    def forward(self, x, edge_index):
+        h = self.gat1(x, edge_index)
+        h = F.relu(h)
+        h = self.gat2(h, edge_index)
+        return F.log_softmax(h, dim=1)
+
+
+class NetAmazon_GAT_layers_4(torch.nn.Module):
+    def __init__(self, num_node_features, num_classes, heads, dropout=0.0):
+        super().__init__()
+        self.gat1 = GATConv(num_node_features, 16, heads=heads, dropout=dropout)
+        self.gat2 = GATConv(16 * heads, 8, heads=heads)
+        self.gat3 = GATConv(8 * heads, 8, heads=heads)
+        self.gat4 = GATConv(8 * heads, num_classes)
+
+    def forward(self, x, edge_index):
+        h = self.gat1(x, edge_index)
+        h = F.relu(h)
+        h = self.gat2(h, edge_index)
+        h = F.relu(h)
+        h = self.gat3(h, edge_index)
+        h = F.relu(h)
+        h = self.gat4(h, edge_index)
+        return F.log_softmax(h, dim=1)
+
+
 class NetAmazon_GCN(torch.nn.Module):
     def __init__(self, num_node_features, num_classes):
         super().__init__()

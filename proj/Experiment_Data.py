@@ -24,3 +24,6 @@ if __name__ == '__main__':
     write_json('data_exp\\pubmed_gat_100.json', pubmed_gat_100)
     write_json('data_exp\\amazon_gat_100.json', amazon_gat_100)
 
+    # change GAT model
+
+
