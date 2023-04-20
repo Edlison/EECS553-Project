@@ -141,6 +141,16 @@ class DynRecDataset(object):
 
 class Amazon:
     def __init__(self, relation='also_buy'):
+        """
+        Task: Transductive
+        Nodes: 439
+        Edges: 4210(also buy), 2916(also view)
+        Features: 1536
+        Classes: 5
+        Training Nodes: 351
+        Validation Nodes: -
+        Test Nodes: 87
+        """
         self.x, self.edge_dict = self.load_data()
         self.edge_index = self.edge_dict[relation]
         self.y = self.get_label()

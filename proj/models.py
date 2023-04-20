@@ -3,8 +3,9 @@
 import torch
 import torch.nn.functional as F
 from torch.nn import Linear, Parameter
+# from torch.nn.init import xavier_uniform_
 from torch_geometric.nn import MessagePassing, GATConv, GCNConv
-from torch_geometric.utils import add_self_loops, degree
+from torch_geometric.utils import add_self_loops, degree, softmax
 
 
 class MyGAT(MessagePassing):
@@ -50,11 +51,52 @@ class MyGAT(MessagePassing):
         return norm.view(-1, 1) * x_j  # norm: [13264, 1], x_j: [13264, 16]
 
 
+class MyMHGAT(MessagePassing):
+    def __init__(self, in_channels, out_channels, heads=1, dropout=0.0):
+        super(MyMHGAT, self).__init__(aggr='max', flow='source_to_target', node_dim=0)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.heads = heads
+        self.dropout = dropout
+        self.negative_slope = 0.2
+        self.lin = Linear(in_channels, heads * out_channels)
+        self.att = Parameter(torch.Tensor(1, heads, out_channels))
+        self.bias = Parameter(torch.Tensor(heads * out_channels))
+
+        self._ini_parameters()
+
+    def _ini_parameters(self):
+        self.lin.reset_parameters()
+        torch.nn.init.xavier_uniform_(self.att)
+        torch.nn.init.zeros_(self.bias)
+
+    def forward(self, x, edge_index):
+        H, C = self.heads, self.out_channels
+        x = self.lin(x).view(-1, H, C)
+        alpha = (x * self.att).sum(dim=-1)
+        # print('alpha: ', alpha.shape, 'x: ', x.shape, 'att: ', self.att.shape)
+
+        edge_index, _ = add_self_loops(edge_index)
+
+        out = self.propagate(edge_index, x=x, alpha=alpha)
+        out = out.view(-1, self.heads * self.out_channels) + self.bias
+
+        return out
+
+    def message(self, x_j, alpha_j, index):
+        alpha = alpha_j
+        alpha = F.leaky_relu(alpha, self.negative_slope)
+        # print('alpha', alpha.shape, 'index', index.shape)
+        alpha = softmax(alpha, index)
+        alpha = F.dropout(alpha, p=self.dropout, training=self.training)
+        return x_j * alpha.unsqueeze(-1)
+
+
 class MyNet(torch.nn.Module):
     def __init__(self, num_node_features, num_classes):
         super().__init__()
-        self.gat1 = MyGAT(num_node_features, 64)
-        self.gat2 = MyGAT(64, num_classes)
+        self.gat1 = MyMHGAT(num_node_features, 8, heads=8, dropout=0.6)
+        self.gat2 = MyMHGAT(64, num_classes)
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)
@@ -65,16 +107,20 @@ class MyNet(torch.nn.Module):
 class Net_imp(torch.nn.Module):
     def __init__(self, num_node_features, num_classes):
         super().__init__()
-        self.gat1 = GATConv(num_node_features, 8, heads=8)
-        # self.lstm = torch.nn.LSTM(input_size=64, hidden_size=32, num_layers=2, batch_first=True)
-        self.batchnorm = torch.nn.BatchNorm1d(64)
+        self.gat1 = GATConv(num_node_features, 16, heads=8, dropout=0.6)
+        self.lstm1 = torch.nn.LSTM(input_size=128, hidden_size=64, num_layers=2, batch_first=True)
+        self.batchnorm1 = torch.nn.BatchNorm1d(64)
         self.gat2 = GATConv(64, num_classes)
 
-    def forward(self, x, edge_index):
-        h = self.gat1(x, edge_index)
-        h = F.leaky_relu(h, negative_slope=0.2)
-        # h, _ = self.lstm(h.view(1, h.shape[0], h.shape[1]))
-        # h = self.batchnorm(h)
+    def forward(self, x, edge_index, mask=None):
+        h, (_, att) = self.gat1(x, edge_index, return_attention_weights=True)
+        # h shape:  torch.Size([2708, 128]) att shape:  torch.Size([13264, 8]), edge index:  torch.Size([2, 10556])
+        # print('h shape: ', h.shape, 'att shape: ', att.shape)
+        if mask != None:
+            pass
+        # h = F.leaky_relu(h, negative_slope=0.2)
+        h, _ = self.lstm1(h.view(1, h.shape[0], h.shape[1]))
+        h = self.batchnorm1(h.squeeze())
         h = self.gat2(h, edge_index)
 
         return F.log_softmax(h, dim=1)

@@ -81,7 +81,8 @@ def train_my(iterations=100, lr=0.005, reg=5e-4):
     for epoch in range(iterations):
         model.train()
         optimizer.zero_grad()
-        out = model(x, edge_index)
+        out = model(x, edge_index, mask=data.train_mask)
+        # print('out shape: ', out.shape)
         loss = F.cross_entropy(out[data.train_mask], data.y[data.train_mask])
         loss.backward()
         optimizer.step()
@@ -244,7 +245,7 @@ if __name__ == '__main__':
     change_model: {'GCN', 'GAT', 'GAT-heads', 'GAT-layers-2', 'GAT-layers-4'}
     """
     # a = train_exp_return_data_pred('cora', 'GAT', iterations=100)
-    a = train_exp_amazon('GAT-heads', 6)
+    # a = train_exp_amazon('GAT-heads', 6)
     # b = train_exp_amazon('GAT-heads', 16)
-    print(a)
     # print(b)
+    train_my(iterations=100, lr=0.005, reg=5e-4)
