@@ -148,7 +148,7 @@ class Net_GAT(torch.nn.Module):
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)
-        h = F.leaky_relu(h, negative_slope=0.2)
+        h = F.elu(h)
         h = self.gat2(h, edge_index)
 
         return F.log_softmax(h, dim=1)
@@ -162,7 +162,7 @@ class Net_GCN(torch.nn.Module):
 
     def forward(self, x, edge_index):
         h = self.gcn1(x, edge_index)
-        h = F.leaky_relu(h, negative_slope=0.2)
+        h = F.relu(h)
         h = self.gcn2(h, edge_index)
 
         return F.log_softmax(h, dim=1)
@@ -190,15 +190,15 @@ class NetAmazon_GAT_heads(torch.nn.Module):
     def __init__(self, num_node_features, num_classes, heads, dropout=0.0):
         super().__init__()
         # original hide parameter gat1: 16, gat2: 8
-        self.gat1 = GATConv(num_node_features, 128, heads=heads, dropout=dropout)
-        self.gat2 = GATConv(128 * heads, 64, heads=heads)
-        self.gat3 = GATConv(64 * heads, num_classes)
+        self.gat1 = GATConv(num_node_features, 16, heads=heads, dropout=dropout)
+        self.gat2 = GATConv(16 * heads, 8, heads=heads)
+        self.gat3 = GATConv(8 * heads, num_classes)
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat2(h, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat3(h, edge_index)
         return F.log_softmax(h, dim=1)
 
@@ -213,7 +213,7 @@ class NetAmazon_GAT_layers_2(torch.nn.Module):
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat2(h, edge_index)
         return F.log_softmax(h, dim=1)
 
@@ -228,11 +228,11 @@ class NetAmazon_GAT_layers_4(torch.nn.Module):
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat2(h, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat3(h, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat4(h, edge_index)
         return F.log_softmax(h, dim=1)
 

@@ -139,13 +139,11 @@ def train_exp(dataset_name='cora', model_name='GCN', iterations=100, lr=0.005, r
         pred = model(x, edge_index).argmax(dim=1)
         cor_test = (pred[data.test_mask] == data.y[data.test_mask]).sum()
         acc_test = cor_test / data.test_mask.sum()
-        # print('epoch: {}, loss: {:.4f}, eval acc: {:.4f}, test acc: {:.4f}'.format(epoch, loss.item(), acc_val, acc_test))
         output.append({'epoch': epoch, 'loss': loss.item(), 'test acc': acc_test.item()})
     model.eval()
     pred = model(x, edge_index).argmax(dim=1)
     cor = (pred[data.test_mask] == data.y[data.test_mask]).sum()
     acc = cor / data.test_mask.sum()
-    # print('Final acc: {:.4f}'.format(acc.item()))
     return output
 
 
@@ -168,6 +166,8 @@ def train_exp_amazon(model_name, heads, iterations=100, lr=0.005, reg=5e-4):
         model.cuda(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
     output = []
+    ori_data = []
+    pred_data = []
     for epoch in range(iterations):
         model.train()
         optimizer.zero_grad()
@@ -180,6 +180,10 @@ def train_exp_amazon(model_name, heads, iterations=100, lr=0.005, reg=5e-4):
         cor_test = (pred[data.test_mask] == data.y[data.test_mask]).sum()
         acc_test = cor_test / data.test_mask.sum()
         output.append({'epoch': epoch, 'loss': loss.item(), 'test acc': acc_test.item()})
+        if epoch == iterations - 1:
+            ori_data = (data.y[data.test_mask]).tolist()
+            pred_data = (pred[data.test_mask]).tolist()
+    output.append({'Original Classification': ori_data, 'Prediction': pred_data})
     model.eval()
     pred = model(x, edge_index).argmax(dim=1)
     cor = (pred[data.test_mask] == data.y[data.test_mask]).sum()
@@ -246,4 +250,16 @@ if __name__ == '__main__':
     model: {'GCN', 'GAT'}
     change_model: {'GCN', 'GAT', 'GAT-heads', 'GAT-layers-2', 'GAT-layers-4'}
     """
-    train_my(iterations=100, lr=0.005, reg=5e-4)  # lr=0.001, reg=5e-3
+    # train_my(iterations=100, lr=0.005, reg=5e-4)  # lr=0.001, reg=5e-3
+    a = train_exp_amazon('GAT', 4, 100, 0.005, 5e-4)
+    b = train_exp_amazon('GAT', 8, 100, 0.005, 5e-4)
+    # c = train_exp_amazon('GAT', 16, 100, 0.005, 5e-4)
+    # d = train_exp_amazon('GAT', 32, 100, 0.005, 5e-4)
+    # e = train_exp_amazon('GAT', 64, 100, 0.005, 5e-4)
+    # f = train_exp_amazon('GAT', 128, 100, 0.005, 5e-4)
+    print(a)
+    print(b)
+    # print(c)
+    # print(d)
+    # print(e)
+    # print(f)
