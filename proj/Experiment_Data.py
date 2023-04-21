@@ -34,12 +34,12 @@ if __name__ == '__main__':
     # write_json('data_exp\\pubmed_gcn_100.json', pubmed_gcn_100)
 
     # change GAT model
-    a = tr.train_exp_amazon('GAT', 4, 100, 0.005, 5e-4)
-    b = tr.train_exp_amazon('GAT', 8, 100, 0.005, 5e-4)
-    c = tr.train_exp_amazon('GAT', 16, 100, 0.005, 5e-4)
-    d = tr.train_exp_amazon('GAT', 32, 100, 0.005, 5e-4)
-    e = tr.train_exp_amazon('GAT', 64, 100, 0.005, 5e-4)
-    f = tr.train_exp_amazon('GAT', 128, 100, 0.005, 5e-4)
+    a = tr.train_exp_amazon('GAT-heads', 4, 100, 0.005, 5e-4)
+    b = tr.train_exp_amazon('GAT-heads', 8, 100, 0.005, 5e-4)
+    c = tr.train_exp_amazon('GAT-heads', 16, 100, 0.005, 5e-4)
+    d = tr.train_exp_amazon('GAT-heads', 32, 100, 0.005, 5e-4)
+    e = tr.train_exp_amazon('GAT-heads', 64, 100, 0.005, 5e-4)
+    f = tr.train_exp_amazon('GAT-heads', 128, 100, 0.005, 5e-4)
     write_json('data_exp\\heads_analysis\\amazon_gat_100_4.json', a)
     write_json('data_exp\\heads_analysis\\amazon_gat_100_8.json', b)
     write_json('data_exp\\heads_analysis\\amazon_gat_100_16.json', c)
