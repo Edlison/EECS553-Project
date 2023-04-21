@@ -68,8 +68,10 @@ def train(dataset_name='cora', model_name='GCN', iterations=100, lr=0.005, reg=5
 
 
 def train_my(iterations=100, lr=0.005, reg=5e-4):
-    dataset = Planetoid(root='../data', name='cora')
-    data = dataset[0]
+    # dataset = Planetoid(root='../data', name='PubMed')
+    # data = dataset[0]
+    dataset = Amazon()
+    data = dataset
     model = Net_imp(dataset.num_node_features, dataset.num_classes)
     x, edge_index = data.x, data.edge_index
     if cuda:
@@ -81,7 +83,7 @@ def train_my(iterations=100, lr=0.005, reg=5e-4):
     for epoch in range(iterations):
         model.train()
         optimizer.zero_grad()
-        out = model(x, edge_index, mask=data.train_mask)
+        out = model(x, edge_index)
         # print('out shape: ', out.shape)
         loss = F.cross_entropy(out[data.train_mask], data.y[data.train_mask])
         loss.backward()
@@ -249,3 +251,4 @@ if __name__ == '__main__':
     # b = train_exp_amazon('GAT-heads', 16)
     # print(b)
     train_my(iterations=100, lr=0.005, reg=5e-4)
+    # train(dataset_name='amazon', model_name='GAT')

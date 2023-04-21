@@ -156,7 +156,7 @@ class Amazon:
         self.y = self.get_label()
         self.num_node_features = self.x.shape[1]
         self.num_classes = 5
-        self.train_ratio = 0.8
+        self.train_ratio = 0.55
         self.train_mask, self.test_mask = self.gen_mask()
 
     def load_data(self):

@@ -53,7 +53,7 @@ class MyGAT(MessagePassing):
 
 class MyMHGAT(MessagePassing):
     def __init__(self, in_channels, out_channels, heads=1, dropout=0.0):
-        super(MyMHGAT, self).__init__(aggr='max', flow='source_to_target', node_dim=0)
+        super(MyMHGAT, self).__init__(aggr='mean', flow='source_to_target', node_dim=0)
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.heads = heads
@@ -95,12 +95,17 @@ class MyMHGAT(MessagePassing):
 class MyNet(torch.nn.Module):
     def __init__(self, num_node_features, num_classes):
         super().__init__()
-        self.gat1 = MyMHGAT(num_node_features, 8, heads=8, dropout=0.6)
-        self.gat2 = MyMHGAT(64, num_classes)
+        self.gat1 = MyMHGAT(num_node_features, 16, heads=8, dropout=0.6)
+        self.gat2 = MyMHGAT(128, 8, heads=8, dropout=0.6)
+        self.gat3 = MyMHGAT(64, num_classes, dropout=0.6)
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)
+        h = F.leaky_relu(h, negative_slope=0.2)
         h = self.gat2(h, edge_index)
+        h = F.leaky_relu(h, negative_slope=0.2)
+        h = self.gat3(h, edge_index)
+
         return F.log_softmax(h, dim=1)
 
 
@@ -108,20 +113,19 @@ class Net_imp(torch.nn.Module):
     def __init__(self, num_node_features, num_classes):
         super().__init__()
         self.gat1 = GATConv(num_node_features, 16, heads=8, dropout=0.6)
-        self.lstm1 = torch.nn.LSTM(input_size=128, hidden_size=64, num_layers=2, batch_first=True)
-        self.batchnorm1 = torch.nn.BatchNorm1d(64)
-        self.gat2 = GATConv(64, num_classes)
+        self.gat2 = GATConv(128, 8, heads=8, dropout=0.6)
+        self.attention = torch.nn.MultiheadAttention(64, num_heads=8)
+        self.fc = Linear(64, num_classes)
 
-    def forward(self, x, edge_index, mask=None):
-        h, (_, att) = self.gat1(x, edge_index, return_attention_weights=True)
-        # h shape:  torch.Size([2708, 128]) att shape:  torch.Size([13264, 8]), edge index:  torch.Size([2, 10556])
-        # print('h shape: ', h.shape, 'att shape: ', att.shape)
-        if mask != None:
-            pass
-        # h = F.leaky_relu(h, negative_slope=0.2)
-        h, _ = self.lstm1(h.view(1, h.shape[0], h.shape[1]))
-        h = self.batchnorm1(h.squeeze())
+    def forward(self, x, edge_index):
+        h = self.gat1(x, edge_index)
+        h = F.relu(h)
         h = self.gat2(h, edge_index)
+        h = F.relu(h)
+        h = h.view(1, h.shape[0], h.shape[1])
+        output, weight = self.attention(h, h, h)
+        # print('output', output.shape, 'wei', weight.shape)
+        h = self.fc(output.squeeze())
 
         return F.log_softmax(h, dim=1)
 
@@ -169,14 +173,14 @@ class NetAmazon_GAT(torch.nn.Module):
     def __init__(self, num_node_features, num_classes, heads=8, dropout=0.0):
         super().__init__()
         self.gat1 = GATConv(num_node_features, 16, heads=heads, dropout=dropout)
-        self.gat2 = GATConv(128, 8, heads=8)
-        self.gat3 = GATConv(64, num_classes)
+        self.gat2 = GATConv(128, 8, heads=8, dropout=dropout)
+        self.gat3 = GATConv(64, num_classes, dropout=dropout)
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat2(h, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat3(h, edge_index)
 
         return F.log_softmax(h, dim=1)
