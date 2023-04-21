@@ -246,9 +246,4 @@ if __name__ == '__main__':
     model: {'GCN', 'GAT'}
     change_model: {'GCN', 'GAT', 'GAT-heads', 'GAT-layers-2', 'GAT-layers-4'}
     """
-    # a = train_exp_return_data_pred('cora', 'GAT', iterations=100)
-    # a = train_exp_amazon('GAT-heads', 6)
-    # b = train_exp_amazon('GAT-heads', 16)
-    # print(b)
-    train_my(iterations=100, lr=0.005, reg=5e-4)
-    # train(dataset_name='amazon', model_name='GAT')
+    train_my(iterations=100, lr=0.005, reg=5e-4)  # lr=0.001, reg=5e-3

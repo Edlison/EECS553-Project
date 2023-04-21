@@ -112,21 +112,21 @@ class MyNet(torch.nn.Module):
 class Net_imp(torch.nn.Module):
     def __init__(self, num_node_features, num_classes):
         super().__init__()
-        self.gat1 = GATConv(num_node_features, 16, heads=8, dropout=0.6)
-        self.gat2 = GATConv(128, 8, heads=8, dropout=0.6)
-        self.attention = torch.nn.MultiheadAttention(64, num_heads=8)
-        self.fc = Linear(64, num_classes)
+        self.gat1 = GATConv(num_node_features, 8, heads=8, dropout=0.6)
+        self.gat2 = GATConv(64, 4, heads=8, dropout=0.6)
+        self.attention = torch.nn.MultiheadAttention(32, num_heads=8, dropout=0.6)
+        self.fc = Linear(32, num_classes)
 
     def forward(self, x, edge_index):
         h = self.gat1(x, edge_index)
-        h = F.relu(h)
+        h = F.elu(h)
         h = self.gat2(h, edge_index)
-        h = F.relu(h)
-        h = h.view(1, h.shape[0], h.shape[1])
-        output, weight = self.attention(h, h, h)
-        # print('output', output.shape, 'wei', weight.shape)
-        h = self.fc(output.squeeze())
-
+        h = F.elu(h)
+        h.unsqueeze_(0)
+        h, weight = self.attention(h, h, h)
+        # h = F.layer_norm(h, [h.shape[-2], h.shape[-1]])
+        h.squeeze_()
+        h = self.fc(h)
         return F.log_softmax(h, dim=1)
 
 
