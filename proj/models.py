@@ -240,9 +240,9 @@ class NetAmazon_GAT_layers_4(torch.nn.Module):
 class NetAmazon_GCN(torch.nn.Module):
     def __init__(self, num_node_features, num_classes):
         super().__init__()
-        self.gcn1 = GCNConv(num_node_features, 256)
-        self.gcn2 = GCNConv(256, 64)
-        self.gcn3 = GCNConv(64, num_classes)
+        self.gcn1 = GCNConv(num_node_features, 64)
+        self.gcn2 = GCNConv(64, 8)
+        self.gcn3 = GCNConv(8, num_classes)
 
     def forward(self, x, edge_index):
         h = self.gcn1(x, edge_index)

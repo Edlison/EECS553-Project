@@ -244,6 +244,50 @@ def train_exp_return_data_pred(dataset_name='cora', model_name='GCN', iterations
     return output
 
 
+def train_my_exp(iterations=100, lr=0.005, reg=5e-4):
+    # dataset = Planetoid(root='../data', name='cora')
+    # dataset = Planetoid(root='../data', name='CiteSeer')
+    dataset = Planetoid(root='../data', name='PubMed')
+    data = dataset[0]
+    # dataset = Amazon()
+    # data = dataset
+    model = Net_imp(dataset.num_node_features, dataset.num_classes)
+    x, edge_index = data.x, data.edge_index
+    if cuda:
+        device = 1
+        x.cuda(device)
+        edge_index(device)
+        model.cuda(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
+    output = []
+    ori_data = []
+    pred_data = []
+    for epoch in range(iterations):
+        model.train()
+        optimizer.zero_grad()
+        out = model(x, edge_index)
+        loss = F.cross_entropy(out[data.train_mask], data.y[data.train_mask])
+        loss.backward()
+        optimizer.step()
+
+        model.eval()
+        pred = model(x, edge_index).argmax(dim=1)
+        cor_test = (pred[data.test_mask] == data.y[data.test_mask]).sum()
+        acc_test = cor_test / data.test_mask.sum()
+        # print('epoch: {}, loss: {:.4f}, test acc: {:.4f}'.format(epoch, loss.item(), acc_test))
+        output.append({'epoch': epoch, 'loss': loss.item(), 'test acc': acc_test.item()})
+        # get original data and predict data of the last iteration
+        if epoch == iterations - 1:
+            ori_data = (data.y[data.test_mask]).tolist()
+            pred_data = (pred[data.test_mask]).tolist()
+    model.eval()
+    pred = model(x, edge_index).argmax(dim=1)
+    cor = (pred[data.test_mask] == data.y[data.test_mask]).sum()
+    acc = cor / data.test_mask.sum()
+    output.append({'Original Classification': ori_data, 'Prediction': pred_data})
+    return output
+
+
 if __name__ == '__main__':
     """
     dataset: {'amazon', 'cora', 'CiteSeer', 'PubMed'}
@@ -251,19 +295,22 @@ if __name__ == '__main__':
     change_model: {'GCN', 'GAT', 'GAT-heads', 'GAT-layers-2', 'GAT-layers-4'}
     """
     # train_my(iterations=100, lr=0.005, reg=5e-4)  # lr=0.001, reg=5e-3
-    a = train_exp_amazon('GAT-heads', 4, 100, 0.005, 5e-4)
-    b = train_exp_amazon('GAT-heads', 8, 100, 0.005, 5e-4)
-    c = train_exp_amazon('GAT-heads', 16, 100, 0.005, 5e-4)
-    d = train_exp_amazon('GAT-heads', 32, 100, 0.005, 5e-4)
-    e = train_exp_amazon('GAT-heads', 64, 100, 0.005, 5e-4)
-    f = train_exp_amazon('GAT-heads', 128, 100, 0.005, 5e-4)
-    print(a)
-    print(b)
-    print(c)
-    print(d)
-    print(e)
-    print(f)
-    # a = train_exp_return_data_pred('amazon', 'GCN')
+    # a = train_exp_amazon('GAT-heads', 4, 100, 0.005, 5e-4)
     # b = train_exp_amazon('GAT-heads', 8, 100, 0.005, 5e-4)
+    # c = train_exp_amazon('GAT-heads', 16, 100, 0.005, 5e-4)
+    # d = train_exp_amazon('GAT-heads', 32, 100, 0.005, 5e-4)
+    # e = train_exp_amazon('GAT-heads', 64, 100, 0.005, 5e-4)
+    # f = train_exp_amazon('GAT-heads', 128, 100, 0.005, 5e-4)
     # print(a)
     # print(b)
+    # print(c)
+    # print(d)
+    # print(e)
+    # print(f)
+    # a = train_exp_return_data_pred('amazon', 'GCN')
+    # b = train_exp_amazon('GAT-heads', 8, 100, 0.005, 5e-4)
+    c = train_my_exp(iterations=100, lr=0.005, reg=5e-4)
+    # print(a)
+    # print(b)
+    print(c)
+    # train_my(iterations=100, lr=0.005, reg=5e-4)

@@ -31,18 +31,19 @@ def calculate_F1_score(path):
             FP_count[str(i)] = fp
     F1_list = []
     for k in range(len(pred_unique)):
-        f1 = TP_count[str(k)] / (TP_count[str(k)] + FP_count[str(k)])
-        F1_list.append(f1)
+        if (TP_count[str(k)] + FP_count[str(k)]) != 0:
+            f1 = TP_count[str(k)] / (TP_count[str(k)] + FP_count[str(k)])
+            F1_list.append(f1)
     return sum(F1_list) / len(pred_unique)
 
 
 if __name__ == '__main__':
-    # F1_cora_gat = calculate_F1_score('data_exp\\cora_gat_100.json')
+    F1_cora_gat = calculate_F1_score('data_exp\\amazon_gat_100.json')
     # F1_citeseer_gat = calculate_F1_score('data_exp\\citeseer_gat_100.json')
     # F1_pubmed_gat = calculate_F1_score('data_exp\\pubmed_gat_100.json')
     # # F1_amazon = calculate_F1_score('data_exp\\amazon_gat_100.json')
     # js_gat = [{'F1_cora_gat': F1_cora_gat}, {'F1_citeseer_gat': F1_citeseer_gat}, {'F1_pubmed': F1_pubmed_gat}]
-    # write_json('data_exp\\F1_gat.json', js_gat)
+    write_json('data_exp\\F1_gsac.json', [{'F1_pubmed_gsac': F1_cora_gat}])
 
     # F1_cora_gcn = calculate_F1_score('data_exp\\cora_gcn_100.json')
     # F1_citeseer_gcn = calculate_F1_score('data_exp\\citeseer_gcn_100.json')
@@ -51,14 +52,10 @@ if __name__ == '__main__':
     # js_gcn = [{'F1_cora_gcn': F1_cora_gcn}, {'F1_citeseer_gcn': F1_citeseer_gcn}, {'F1_pubmed_gcn': F1_pubmed_gcn}]
     # write_json('data_exp\\F1_gcn.json', js_gcn)
 
-    a = calculate_F1_score('data_exp\\heads_analysis\\amazon_gat_100_4.json')
-    b = calculate_F1_score('data_exp\\heads_analysis\\amazon_gat_100_8.json')
-    c = calculate_F1_score('data_exp\\heads_analysis\\amazon_gat_100_16.json')
-    d = calculate_F1_score('data_exp\\heads_analysis\\amazon_gat_100_32.json')
-    e = calculate_F1_score('data_exp\\heads_analysis\\amazon_gat_100_64.json')
-    f = calculate_F1_score('data_exp\\heads_analysis\\amazon_gat_100_128.json')
-    # F1_amazon = calculate_F1_score('data_exp\\amazon_gcn_100.json')
-    js_heads = [{'4': a}, {'8': b}, {'16': c}, {'32': d}, {'64': e}, {'128': f}]
-    write_json('data_exp\\heads_analysis\\F1.json', js_heads)
+    # a = calculate_F1_score('data_exp\\amazon_gcn_100.json')
+    # b = calculate_F1_score('data_exp\\amazon_gat_100.json')
+    # c = calculate_F1_score('data_exp\\amazon_gsac_100.json')
+    # js_heads = [{'amazon gcn': 0}, {'amazon gat': b}, {'amazon gsac': 0}]
+    # write_json('data_exp\\heads_analysis\\F1.json', js_heads)
 
 
