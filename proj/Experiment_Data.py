@@ -47,13 +47,13 @@ if __name__ == '__main__':
     # write_json('data_exp\\heads_analysis\\amazon_gat_100_128.json', f)
 
     # amazon_gcn = tr.train_exp_return_data_pred('amazon', 'GCN')
-    # amazon_gat = tr.train_exp_amazon('GAT-heads', 8, 100, 0.005, 5e-4)
+    amazon_gat = tr.train_exp_amazon('GAT-heads', 8, 100, 0.005, 5e-4)
     # amazon_gsac = tr.train_my_exp(iterations=100, lr=0.005, reg=5e-4)
     # write_json('data_exp\\amazon_gcn_100_view.json', amazon_gcn)
-    # write_json('data_exp\\amazon_gat_100_view.json', amazon_gat)
+    write_json('data_exp\\also_view\\amazon_gat_100_view_5.json', amazon_gat)
     # write_json('data_exp\\amazon_gsac_100_view.json', amazon_gsac)
 
-    pubmed_gsac = tr.train_my_exp(iterations=100, lr=0.005, reg=5e-4)
-    write_json('data_exp\\pubmed_gsac_100.json', pubmed_gsac)
+    # pubmed_gsac = tr.train_my_exp(iterations=100, lr=0.005, reg=5e-4)
+    # write_json('data_exp\\pubmed_gsac_100.json', pubmed_gsac)
 
 

@@ -148,7 +148,7 @@ def train_exp(dataset_name='cora', model_name='GCN', iterations=100, lr=0.005, r
 
 
 def train_exp_amazon(model_name, heads, iterations=100, lr=0.005, reg=5e-4):
-    dataset = {'amazon': Amazon()}
+    dataset = {'amazon': Amazon(relation='also_view')}
     dataset = dataset['amazon']
     data = dataset
     net = {'GCN': NetAmazon_GCN(dataset.num_node_features, dataset.num_classes),
